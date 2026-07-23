@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  icon      String   // emoji or lucide icon name
+  color     String   // tailwind color token, e.g. "amber"
+  createdAt DateTime @default(now())
+  deals     Deal[]
+}
+
+model Deal {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  store         String
+  storeLogo     String?  // emoji or short text used as logo mark
+  imageUrl      String
+  originalPrice Float
+  dealPrice     Float
+  currency      String   @default("USD")
+  discountPct   Int      // computed % off, stored for sorting/filtering
+  url           String   // outbound deal link
+  categorySlug  String
+  category      Category @relation(fields: [categorySlug], references: [slug])
+  featured      Boolean  @default(false)
+  trending      Boolean  @default(false)
+  flashDeal     Boolean  @default(false) // shows a live countdown
+  expiresAt     DateTime
+  claimedCount  Int      @default(0)
+  viewCount     Int      @default(0)
+  rating        Float    @default(4.5)
+  tags          String   @default("") // comma separated
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  savedBy       SavedDeal[]
+  claims        Claim[]
+  reviews       Review[]
+}
+
+model SavedDeal {
+  id        String   @id @default(cuid())
+  sessionId String
+  dealId    String
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([sessionId, dealId])
+  @@index([sessionId])
+}
+
+model Claim {
+  id        String   @id @default(cuid())
+  sessionId String
+  dealId    String
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([sessionId, dealId])
+  @@index([sessionId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  dealId    String
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  sessionId String
+  rating    Int
+  comment   String   @default("")
+  createdAt DateTime @default(now())
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  role      String   // "user" | "assistant"
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+}
