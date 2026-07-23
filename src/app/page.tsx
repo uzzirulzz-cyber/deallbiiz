@@ -1,56 +1,67 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from "@tanstack/react-query";
 import { io, type Socket } from "socket.io-client";
 import { Sparkles } from "lucide-react";
 
-import { useDealsStore } from "@/components/deals/use-deals-store";
-import { fetchDeals, fetchFeaturedDeal } from "@/components/deals/api";
-import type { LiveClaim, WSStats, WSWelcome } from "@/components/deals/types";
-import { Header } from "@/components/deals/header";
-import { HeroDeal } from "@/components/deals/hero-deal";
-import { LiveTicker } from "@/components/deals/live-ticker";
-import { TrendingRail } from "@/components/deals/trending-rail";
-import { CategoryPills } from "@/components/deals/category-pills";
-import { FilterBar } from "@/components/deals/filter-bar";
-import { DealsGrid } from "@/components/deals/deals-grid";
-import { Footer } from "@/components/deals/footer";
-import { AiFinder } from "@/components/deals/ai-finder";
-import { SnapADeal } from "@/components/deals/snap-a-deal";
-import { WebSearchDeals } from "@/components/deals/web-search-deals";
-import { SavedDrawer } from "@/components/deals/saved-drawer";
+import { useMarketplaceStore } from "@/components/marketplace/use-marketplace-store";
+import { fetchFeaturedListing, fetchListings } from "@/components/marketplace/api";
+import type {
+  LiveClose,
+  WSStats,
+  WSWelcome,
+} from "@/components/marketplace/types";
+import { Header } from "@/components/marketplace/header";
+import { Hero } from "@/components/marketplace/hero";
+import { StatsBar } from "@/components/marketplace/stats-bar";
+import { LiveTicker } from "@/components/marketplace/live-ticker";
+import { TrendingRail } from "@/components/marketplace/trending-rail";
+import { CategoryPills } from "@/components/marketplace/category-pills";
+import { FilterBar } from "@/components/marketplace/filter-bar";
+import { ListingsGrid } from "@/components/marketplace/listings-grid";
+import { HowItWorks } from "@/components/marketplace/how-it-works";
+import { CtaBand } from "@/components/marketplace/cta-band";
+import { Footer } from "@/components/marketplace/footer";
+import { AiValuation } from "@/components/marketplace/ai-valuation";
+import { SnapAListing } from "@/components/marketplace/snap-a-listing";
+import { WebSearch } from "@/components/marketplace/web-search";
+import { SavedDrawer } from "@/components/marketplace/saved-drawer";
 
-function useFeaturedDeal() {
+function useFeaturedListing() {
   return useQuery({
     queryKey: ["featured"],
-    queryFn: fetchFeaturedDeal,
+    queryFn: fetchFeaturedListing,
     staleTime: 60_000,
   });
 }
 
-function useDealsCount() {
-  const category = useDealsStore((s) => s.category);
-  const sort = useDealsStore((s) => s.sort);
-  const query = useDealsStore((s) => s.query);
-  const flashOnly = useDealsStore((s) => s.flashOnly);
+function useListingsCount() {
+  const category = useMarketplaceStore((s) => s.category);
+  const stage = useMarketplaceStore((s) => s.stage);
+  const sort = useMarketplaceStore((s) => s.sort);
+  const query = useMarketplaceStore((s) => s.query);
   return useQuery({
-    queryKey: ["deals", { category, sort, query, flashOnly }],
+    queryKey: ["listings", { category, stage, sort, query, count: true }],
     queryFn: () =>
-      fetchDeals({ category, sort, q: query, flash: flashOnly, limit: 48 }),
+      fetchListings({ category, stage, sort, q: query, limit: 48 }),
     staleTime: 30_000,
   });
 }
 
 function PageContent() {
-  const setSocket = useDealsStore((s) => s.setSocket);
-  const setSocketConnected = useDealsStore((s) => s.setSocketConnected);
-  const setOnline = useDealsStore((s) => s.setOnline);
-  const setRecentClaims = useDealsStore((s) => s.setRecentClaims);
-  const addClaim = useDealsStore((s) => s.addClaim);
-  const setViewerCount = useDealsStore((s) => s.setViewerCount);
-  const setClaimsLastHour = useDealsStore((s) => s.setClaimsLastHour);
-  const setAiOpen = useDealsStore((s) => s.setAiOpen);
+  const setSocket = useMarketplaceStore((s) => s.setSocket);
+  const setSocketConnected = useMarketplaceStore((s) => s.setSocketConnected);
+  const setOnline = useMarketplaceStore((s) => s.setOnline);
+  const setRecentCloses = useMarketplaceStore((s) => s.setRecentCloses);
+  const addClose = useMarketplaceStore((s) => s.addClose);
+  const setViewerCount = useMarketplaceStore((s) => s.setViewerCount);
+  const setDealsClosed24h = useMarketplaceStore((s) => s.setDealsClosed24h);
+  const setAiOpen = useMarketplaceStore((s) => s.setAiOpen);
 
   const socketRef = useRef<Socket | null>(null);
 
@@ -67,7 +78,7 @@ function PageContent() {
 
     // Expose only the methods we use to the store (keeps the type simple)
     setSocket({
-      emit: (ev: string, data?: unknown) => socket.emit(ev, data as any),
+      emit: (ev: string, data?: unknown) => socket.emit(ev, data as never),
       disconnect: () => socket.disconnect(),
     });
 
@@ -75,25 +86,26 @@ function PageContent() {
     const onDisconnect = () => setSocketConnected(false);
     const onWelcome = (w: WSWelcome) => {
       if (typeof w?.online === "number") setOnline(w.online);
-      if (Array.isArray(w?.recentClaims)) setRecentClaims(w.recentClaims);
+      if (Array.isArray(w?.recentCloses)) setRecentCloses(w.recentCloses);
     };
     const onStats = (s: WSStats) => {
       if (typeof s?.online === "number") setOnline(s.online);
-      if (typeof s?.claimsLastHour === "number") setClaimsLastHour(s.claimsLastHour);
+      if (typeof s?.dealsClosed24h === "number")
+        setDealsClosed24h(s.dealsClosed24h);
       if (Array.isArray(s?.viewers)) {
         for (const v of s.viewers) {
-          if (v?.dealId && typeof v.count === "number") {
-            setViewerCount(v.dealId, v.count);
+          if (v?.listingId && typeof v.count === "number") {
+            setViewerCount(v.listingId, v.count);
           }
         }
       }
     };
-    const onClaim = (c: LiveClaim) => {
-      if (c?.id) addClaim(c);
+    const onClose = (c: LiveClose) => {
+      if (c?.id) addClose(c);
     };
-    const onViewAck = (payload: { dealId: string; count: number }) => {
-      if (payload?.dealId && typeof payload.count === "number") {
-        setViewerCount(payload.dealId, payload.count);
+    const onViewAck = (payload: { listingId: string; count: number }) => {
+      if (payload?.listingId && typeof payload.count === "number") {
+        setViewerCount(payload.listingId, payload.count);
       }
     };
 
@@ -101,7 +113,7 @@ function PageContent() {
     socket.on("disconnect", onDisconnect);
     socket.on("welcome", onWelcome);
     socket.on("stats", onStats);
-    socket.on("claim", onClaim);
+    socket.on("close", onClose);
     socket.on("view-ack", onViewAck);
 
     return () => {
@@ -109,7 +121,7 @@ function PageContent() {
       socket.off("disconnect", onDisconnect);
       socket.off("welcome", onWelcome);
       socket.off("stats", onStats);
-      socket.off("claim", onClaim);
+      socket.off("close", onClose);
       socket.off("view-ack", onViewAck);
       socket.disconnect();
       socketRef.current = null;
@@ -120,16 +132,17 @@ function PageContent() {
     setSocket,
     setSocketConnected,
     setOnline,
-    setRecentClaims,
-    addClaim,
+    setRecentCloses,
+    addClose,
     setViewerCount,
-    setClaimsLastHour,
+    setDealsClosed24h,
   ]);
 
-  const { data: featuredData, isLoading: featuredLoading } = useFeaturedDeal();
-  const featured = featuredData?.deal ?? null;
+  const { data: featuredData, isLoading: featuredLoading } =
+    useFeaturedListing();
+  const featured = featuredData?.listing ?? null;
 
-  const countQuery = useDealsCount();
+  const countQuery = useListingsCount();
   const count = countQuery.data?.count ?? 0;
 
   return (
@@ -137,80 +150,82 @@ function PageContent() {
       <Header />
 
       <main className="flex-1">
-        {/* Hero */}
-        {featuredLoading ? (
-          <HeroSkeleton />
-        ) : featured ? (
-          <HeroDeal deal={featured} />
-        ) : null}
+        {/* Hero — showpiece dark navy banner */}
+        <Hero listing={featured} loading={featuredLoading} />
 
+        {/* Stats bar — overlaps hero */}
+        <StatsBar />
+
+        {/* Live ticker */}
         <LiveTicker />
 
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10">
-          {/* Trending rail */}
-          <TrendingRail />
+        {/* Trending rail */}
+        <TrendingRail />
 
-          {/* Categories */}
-          <section aria-label="Categories" className="flex flex-col gap-3">
-            <span className="text-xs font-semibold uppercase tracking-widest text-amber-400">
+        {/* Browse by category */}
+        <section
+          id="categories"
+          aria-label="Browse by category"
+          className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10"
+        >
+          <div className="mb-4 flex flex-col gap-1">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-[#FF7A00]">
               Browse
             </span>
-            <CategoryPills />
-          </section>
+            <h2 className="text-xl font-bold tracking-tight text-[#111827] sm:text-2xl">
+              Browse by Category
+            </h2>
+          </div>
+          <CategoryPills />
+        </section>
 
-          {/* Filter + grid */}
-          <section aria-label="All deals" className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs font-semibold uppercase tracking-widest text-amber-400">
-                  The feed
-                </span>
-                <h2 className="text-2xl font-bold tracking-tight">All deals</h2>
-              </div>
-              <FilterBar count={count} />
-            </div>
-            <DealsGrid />
-          </section>
+        {/* How it works */}
+        <div id="how-it-works">
+          <HowItWorks />
         </div>
+
+        {/* Filter + listings grid */}
+        <section
+          id="listings"
+          aria-label="All business listings"
+          className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-12 sm:px-6 sm:py-16"
+        >
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-[#FF7A00]">
+              The marketplace
+            </span>
+            <h2 className="text-2xl font-bold tracking-tight text-[#111827] sm:text-3xl">
+              All Business Listings
+            </h2>
+            <p className="text-sm text-[#6B7280]">
+              Verified businesses for sale worldwide — filter by category,
+              stage, or sort by price, revenue, and multiple.
+            </p>
+          </div>
+          <FilterBar count={count} />
+          <ListingsGrid />
+        </section>
+
+        {/* Mid-page CTA band */}
+        <CtaBand />
       </main>
 
       <Footer />
 
-      {/* Floating action button — mobile AI Finder shortcut */}
+      {/* Floating action button — mobile AI Valuation shortcut */}
       <button
         onClick={() => setAiOpen(true)}
-        aria-label="Open AI Deal Finder"
-        className="fixed bottom-5 right-5 z-30 grid size-14 place-items-center rounded-full bg-amber-500 text-amber-950 shadow-xl shadow-amber-500/30 transition-transform hover:scale-105 active:scale-95 md:hidden"
+        aria-label="Open AI Valuation"
+        className="fixed bottom-5 right-5 z-30 grid size-14 place-items-center rounded-full bg-[#FF7A00] text-white shadow-[0_8px_24px_rgba(255,122,0,0.4)] transition-transform hover:scale-105 active:scale-95 md:hidden"
       >
-        <Sparkles className="size-6" strokeWidth={2.4} />
+        <Sparkles className="size-6" strokeWidth={2.2} />
       </button>
 
       {/* Dialogs / sheets */}
-      <AiFinder />
-      <SnapADeal />
-      <WebSearchDeals />
+      <AiValuation />
+      <SnapAListing />
+      <WebSearch />
       <SavedDrawer />
-    </div>
-  );
-}
-
-function HeroSkeleton() {
-  return (
-    <div className="border-b border-border/40 bg-gradient-to-b from-amber-500/[0.05] via-background to-background">
-      <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
-        <div className="mb-6 h-8 w-40 animate-pulse rounded bg-muted" />
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-10">
-          <div className="aspect-[16/11] w-full animate-pulse rounded-2xl bg-muted" />
-          <div className="flex flex-col gap-4">
-            <div className="h-6 w-32 animate-pulse rounded bg-muted" />
-            <div className="h-10 w-3/4 animate-pulse rounded bg-muted" />
-            <div className="h-4 w-full animate-pulse rounded bg-muted" />
-            <div className="h-4 w-5/6 animate-pulse rounded bg-muted" />
-            <div className="h-16 w-full animate-pulse rounded-xl bg-muted" />
-            <div className="h-10 w-2/3 animate-pulse rounded bg-muted" />
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

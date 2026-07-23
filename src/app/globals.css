@@ -6,8 +6,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -43,98 +45,92 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/*
+  Make This Deal — "Neo-Modern Clean" LIGHT theme.
+  Light gray page bg, white cards, navy ink banners, vibrant orange accent.
+*/
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --radius: 0.875rem; /* 14px base so cards reach 16-24px easily */
+
+  /* Surfaces */
+  --background: #f5f5f7; /* cool light gray page bg */
+  --foreground: #111827; /* headings/ink */
+  --card: #ffffff; /* pure white for elevated cards */
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+
+  /* Primary = vibrant orange */
+  --primary: #ff7a00;
+  --primary-foreground: #ffffff;
+
+  /* Secondary = light gray chip */
+  --secondary: #f3f4f6;
+  --secondary-foreground: #111827;
+
+  /* Muted */
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+
+  /* Accent = soft orange tint */
+  --accent: #fff4eb;
+  --accent-foreground: #9a4a00;
+
+  /* Functional colors */
+  --destructive: #ff5757; /* coral red */
+  --success: #10b981; /* emerald */
+  --warning: #f59e0b; /* amber */
+
+  /* Borders / inputs */
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #ff7a00;
+
+  /* Charts (warm + functional) */
+  --chart-1: #ff7a00; /* orange */
+  --chart-2: #10b981; /* emerald */
+  --chart-3: #ff5757; /* coral */
+  --chart-4: #f59e0b; /* amber */
+  --chart-5: #1a1d2e; /* navy ink */
+
+  /* Sidebar (unused on this page but kept consistent) */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #111827;
+  --sidebar-primary: #ff7a00;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #fff4eb;
+  --sidebar-accent-foreground: #9a4a00;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #ff7a00;
 }
 
+/* No dark theme — the whole app is light. Keep the .dark selector harmless. */
 .dark {
-  /* "Premium Deal Hunter" — warm charcoal dark theme */
-  --background: oklch(0.16 0.012 60);
-  --foreground: oklch(0.97 0.01 60);
-  --card: oklch(0.20 0.014 60);
-  --card-foreground: oklch(0.97 0.01 60);
-  --popover: oklch(0.22 0.014 60);
-  --popover-foreground: oklch(0.97 0.01 60);
-  --primary: oklch(0.78 0.16 70);
-  --primary-foreground: oklch(0.18 0.02 60);
-  --secondary: oklch(0.24 0.012 60);
-  --secondary-foreground: oklch(0.97 0.01 60);
-  --muted: oklch(0.24 0.012 60);
-  --muted-foreground: oklch(0.70 0.02 60);
-  --accent: oklch(0.70 0.15 155);
-  --accent-foreground: oklch(0.16 0.02 60);
-  --destructive: oklch(0.65 0.22 25);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.78 0.16 70);
-  --chart-1: oklch(0.78 0.16 70);   /* amber */
-  --chart-2: oklch(0.70 0.15 155);  /* emerald */
-  --chart-3: oklch(0.65 0.22 25);   /* rose */
-  --chart-4: oklch(0.70 0.13 230);  /* sky */
-  --chart-5: oklch(0.65 0.20 300);  /* violet */
-  --sidebar: oklch(0.18 0.013 60);
-  --sidebar-foreground: oklch(0.97 0.01 60);
-  --sidebar-primary: oklch(0.78 0.16 70);
-  --sidebar-primary-foreground: oklch(0.18 0.02 60);
-  --sidebar-accent: oklch(0.24 0.012 60);
-  --sidebar-accent-foreground: oklch(0.97 0.01 60);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.78 0.16 70);
+  color-scheme: light;
 }
 
-/* Custom scrollbar — thin, amber thumb on dark track, rounded */
+/* Custom scrollbar — thin, orange thumb on light track, rounded */
 * {
   scrollbar-width: thin;
-  scrollbar-color: oklch(0.78 0.16 70 / 0.4) transparent;
+  scrollbar-color: rgba(255, 122, 0, 0.4) transparent;
 }
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 *::-webkit-scrollbar-track {
-  background: oklch(0.16 0.012 60 / 0.4);
+  background: transparent;
   border-radius: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background: oklch(0.78 0.16 70 / 0.5);
+  background: rgba(255, 122, 0, 0.45);
   border-radius: 8px;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.78 0.16 70 / 0.8);
+  background: rgba(255, 122, 0, 0.75);
 }
 
-/* Hide scrollbar utility (used by the trending rail) */
+/* Hide scrollbar utility (horizontal rails) */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -144,41 +140,81 @@
 }
 
 /* Marquee animation for the live ticker */
-@keyframes ttd-marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+@keyframes mtd-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 .animate-marquee {
-  animation: ttd-marquee 40s linear infinite;
+  animation: mtd-marquee 38s linear infinite;
 }
 .animate-marquee:hover {
   animation-play-state: paused;
 }
 
 /* Soft pulse for "LIVE" dots */
-@keyframes ttd-pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
+@keyframes mtd-pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(0.92);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
 }
-.ttd-live-dot {
-  animation: ttd-pulse-dot 1.6s ease-in-out infinite;
+.mtd-live-dot {
+  animation: mtd-pulse-dot 1.6s ease-in-out infinite;
 }
 
 /* Bounce for chat typing indicator */
-@keyframes ttd-bounce {
-  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-  40% { transform: translateY(-4px); opacity: 1; }
+@keyframes mtd-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
 }
-.ttd-typing-dot {
-  animation: ttd-bounce 1.2s infinite ease-in-out;
+.mtd-typing-dot {
+  animation: mtd-bounce 1.2s infinite ease-in-out;
 }
-.ttd-typing-dot:nth-child(2) { animation-delay: 0.15s; }
-.ttd-typing-dot:nth-child(3) { animation-delay: 0.3s; }
+.mtd-typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.mtd-typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* Hero featured card float */
+@keyframes mtd-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.mtd-float {
+  animation: mtd-float 6s ease-in-out infinite;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee,
-  .ttd-live-dot,
-  .ttd-typing-dot {
+  .mtd-live-dot,
+  .mtd-typing-dot,
+  .mtd-float {
     animation: none !important;
   }
 }
@@ -189,5 +225,10 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01", "ss03";
+  }
+  /* Tabular nums for prices and metrics everywhere */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 }

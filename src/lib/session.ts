@@ -1,10 +1,10 @@
 import { cookies } from "next/headers";
 
-export const SESSION_COOKIE = "ttd_session";
+export const SESSION_COOKIE = "mtd_session";
 
 /**
  * Get or create an anonymous session id for the current request.
- * Stored in a cookie so saved/claimed deals persist for the visitor.
+ * Stored in a cookie so saved listings / inquiries persist for the visitor.
  */
 export async function getSessionId(): Promise<string> {
   const store = await cookies();
@@ -21,31 +21,44 @@ export async function getSessionId(): Promise<string> {
   return sid;
 }
 
-export interface DealWithCategory {
+export interface ListingWithCategory {
   id: string;
   title: string;
+  tagline: string;
   description: string;
-  store: string;
-  storeLogo: string | null;
-  imageUrl: string;
-  originalPrice: number;
-  dealPrice: number;
-  currency: string;
-  discountPct: number;
-  url: string;
   categorySlug: string;
+  askingPrice: number;
+  valuation: number;
+  currency: string;
+  annualRevenue: number;
+  annualProfit: number;
+  revenueMultiple: number;
+  profitMultiple: number;
+  stage: string;
+  location: string;
+  ageYears: number;
+  employees: number;
+  verified: boolean;
   featured: boolean;
   trending: boolean;
-  flashDeal: boolean;
-  expiresAt: string;
-  claimedCount: number;
-  viewCount: number;
-  rating: number;
+  imageUrl: string;
+  metrics: string;
   tags: string;
+  url: string;
+  viewCount: number;
+  inquiryCount: number;
+  rating: number;
   createdAt: string;
 }
 
-export function formatCurrency(amount: number, currency = "USD") {
+export function formatCurrency(amount: number, currency = "USD", opts: { compact?: boolean } = {}) {
+  if (opts.compact) {
+    const abs = Math.abs(amount);
+    const sign = amount < 0 ? "-" : "";
+    if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(abs >= 10_000_000 ? 1 : 2)}M`;
+    if (abs >= 1_000) return `${sign}$${(abs / 1_000).toFixed(abs >= 100_000 ? 0 : 1)}K`;
+    return `${sign}$${abs.toFixed(0)}`;
+  }
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",

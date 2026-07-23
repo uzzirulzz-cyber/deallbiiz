@@ -5,119 +5,119 @@ const httpServer = createServer()
 const io = new Server(httpServer, {
   // DO NOT change the path, it is used by Caddy to forward the request to the correct port
   path: '/',
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
-  },
+  cors: { origin: '*', methods: ['GET', 'POST'] },
   pingTimeout: 60000,
   pingInterval: 25000,
 })
 
-// ---- In-memory state for the live deal feed ----
-const viewers = new Map<string, Set<string>>() // dealId -> set of socket ids
+// ---- In-memory state for the live marketplace feed ----
+const viewers = new Map<string, Set<string>>() // listingId -> set of socket ids
 const onlineCount = { value: 0 }
-const recentClaims: Array<{
+const recentCloses: Array<{
   id: string
-  dealTitle: string
-  store: string
-  user: string
+  listingTitle: string
+  categorySlug: string
+  amount: number
+  party: string
   at: number
 }> = []
 
-const VIEWER_NAMES = ['A shopper in Karachi', 'Someone in Lahore', 'A buyer in NYC', 'A visitor in London', 'A deal hunter in Tokyo', 'Someone in Sydney', 'A shopper in Dubai', 'A visitor in Berlin', 'A buyer in Toronto', 'Someone in Singapore']
-const randomName = () => VIEWER_NAMES[Math.floor(Math.random() * VIEWER_NAMES.length)]
+const PARTIES = [
+  'An investor in Karachi', 'A buyer in Dubai', 'An acquirer in Singapore', 'A fund in London',
+  'A buyer in NYC', 'An investor in Lahore', 'A founder in Berlin', 'A buyer in Toronto',
+  'An investor in Sydney', 'A PE firm in Hong Kong',
+]
+const randomParty = () => PARTIES[Math.floor(Math.random() * PARTIES.length)]
 
 function broadcastLiveStats() {
   const stats = {
     online: onlineCount.value,
-    viewers: Array.from(viewers.entries()).map(([dealId, set]) => ({
-      dealId,
-      count: set.size,
-    })),
-    claimsLastHour: recentClaims.filter((c) => Date.now() - c.at < 3600_000).length,
+    viewers: Array.from(viewers.entries()).map(([listingId, set]) => ({ listingId, count: set.size })),
+    dealsClosed24h: recentCloses.filter((c) => Date.now() - c.at < 86400_000).length,
   }
   io.emit('stats', stats)
 }
 
-// Periodically simulate other shoppers viewing / claiming deals to keep the feed alive
-const DEAL_TITLES = [
-  { id: 'sim-1', title: 'AuraBuds Pro 2', store: 'AudioHub' },
-  { id: 'sim-2', title: 'Merino Wool Crewneck', store: 'Northfield' },
-  { id: 'sim-3', title: 'Lumina Smart Floor Lamp', store: 'Haus Labs' },
-  { id: 'sim-4', title: 'Voidstrike Mechanical Keyboard', store: 'KeyForge' },
-  { id: 'sim-5', title: 'Adjustable Dumbbell Pair', store: 'IronCore' },
-  { id: 'sim-6', title: 'Glow Serum', store: 'Bloom Skin' },
-  { id: 'sim-7', title: 'Bali Beach Villa Escape', store: 'WanderTrips' },
-  { id: 'sim-8', title: 'Coffee Sampler', store: 'Bean Theory' },
+const LISTING_POOL = [
+  { id: 'sim-1', title: 'CloudInbox — Email Automation SaaS', categorySlug: 'saas', amount: 1_200_000 },
+  { id: 'sim-2', title: 'ResumeAI — AI Resume Builder', categorySlug: 'ai', amount: 980_000 },
+  { id: 'sim-3', title: 'PetSupplies Direct — DTC Pet Brand', categorySlug: 'ecommerce', amount: 900_000 },
+  { id: 'sim-4', title: 'PayBridge — B2B Cross-Border Payments', categorySlug: 'fintech', amount: 2_400_000 },
+  { id: 'sim-5', title: 'CareSync — Clinic Management', categorySlug: 'healthtech', amount: 1_800_000 },
+  { id: 'sim-6', title: 'SentinelScan — Vulnerability Scanner', categorySlug: 'cybersecurity', amount: 1_600_000 },
+  { id: 'sim-7', title: '8-Unit Mixed-Use Building, Karachi', categorySlug: 'realestate', amount: 1_400_000 },
+  { id: 'sim-8', title: 'FlowOps — ERP for Manufacturers', categorySlug: 'crmerp', amount: 2_100_000 },
+  { id: 'sim-9', title: 'LinguaLive — Language Tutoring', categorySlug: 'edtech', amount: 780_000 },
+  { id: 'sim-10', title: 'RecipeHub.com — Food Blog', categorySlug: 'websites', amount: 220_000 },
 ]
 
-function pushClaim() {
-  const deal = DEAL_TITLES[Math.floor(Math.random() * DEAL_TITLES.length)]
-  const claim = {
+function pushClose() {
+  const l = LISTING_POOL[Math.floor(Math.random() * LISTING_POOL.length)]
+  const close = {
     id: Math.random().toString(36).slice(2),
-    dealTitle: deal.title,
-    store: deal.store,
-    user: randomName(),
+    listingTitle: l.title,
+    categorySlug: l.categorySlug,
+    amount: l.amount,
+    party: randomParty(),
     at: Date.now(),
   }
-  recentClaims.unshift(claim)
-  if (recentClaims.length > 30) recentClaims.pop()
-  io.emit('claim', claim)
+  recentCloses.unshift(close)
+  if (recentCloses.length > 30) recentCloses.pop()
+  io.emit('close', close)
 }
 
-// Every ~6s push a simulated claim to make the feed feel alive
+// Every ~7s push a simulated deal close to keep the feed alive
 setInterval(() => {
-  if (onlineCount.value > 0 && Math.random() > 0.3) pushClaim()
-}, 6000)
+  if (onlineCount.value > 0 && Math.random() > 0.25) pushClose()
+}, 7000)
 
 // Every 5s broadcast fresh stats
 setInterval(broadcastLiveStats, 5000)
 
 io.on('connection', (socket) => {
   onlineCount.value++
-  console.log(`[deal-feed] connect ${socket.id} (online=${onlineCount.value})`)
+  console.log(`[mtd-feed] connect ${socket.id} (online=${onlineCount.value})`)
 
   socket.emit('welcome', {
     online: onlineCount.value,
-    recentClaims: recentClaims.slice(0, 8),
+    recentCloses: recentCloses.slice(0, 8),
   })
 
-  // Client tells us which deal they are currently viewing
-  socket.on('view', (dealId: string) => {
-    if (!dealId || typeof dealId !== 'string') return
-    // remove from any previous deal viewer set
+  // Client tells us which listing they are currently viewing
+  socket.on('view', (listingId: string) => {
+    if (!listingId || typeof listingId !== 'string') return
     for (const [id, set] of viewers.entries()) {
-      if (id !== dealId) {
+      if (id !== listingId) {
         if (set.delete(socket.id) && set.size === 0) viewers.delete(id)
       }
     }
-    if (!viewers.has(dealId)) viewers.set(dealId, new Set())
-    viewers.get(dealId)!.add(socket.id)
-    // Acknowledge with current count for this deal
-    socket.emit('view-ack', { dealId, count: viewers.get(dealId)!.size })
+    if (!viewers.has(listingId)) viewers.set(listingId, new Set())
+    viewers.get(listingId)!.add(socket.id)
+    socket.emit('view-ack', { listingId, count: viewers.get(listingId)!.size })
   })
 
-  socket.on('stop-view', (dealId: string) => {
-    const set = viewers.get(dealId)
+  socket.on('stop-view', (listingId: string) => {
+    const set = viewers.get(listingId)
     if (set) {
       set.delete(socket.id)
-      if (set.size === 0) viewers.delete(dealId)
+      if (set.size === 0) viewers.delete(listingId)
     }
   })
 
-  // A real client claimed a deal — broadcast to everyone
-  socket.on('claim', (data: { dealId: string; dealTitle: string; store: string }) => {
-    if (!data?.dealId) return
-    const claim = {
+  // A real client closed/connected on a deal — broadcast to everyone
+  socket.on('close', (data: { listingId: string; listingTitle: string; categorySlug: string; amount: number }) => {
+    if (!data?.listingId) return
+    const close = {
       id: Math.random().toString(36).slice(2),
-      dealTitle: data.dealTitle,
-      store: data.store,
-      user: randomName(),
+      listingTitle: data.listingTitle,
+      categorySlug: data.categorySlug || 'saas',
+      amount: data.amount || 0,
+      party: randomParty(),
       at: Date.now(),
     }
-    recentClaims.unshift(claim)
-    if (recentClaims.length > 30) recentClaims.pop()
-    io.emit('claim', claim)
+    recentCloses.unshift(close)
+    if (recentCloses.length > 30) recentCloses.pop()
+    io.emit('close', close)
   })
 
   socket.on('disconnect', () => {
@@ -125,15 +125,15 @@ io.on('connection', (socket) => {
     for (const [id, set] of viewers.entries()) {
       if (set.delete(socket.id) && set.size === 0) viewers.delete(id)
     }
-    console.log(`[deal-feed] disconnect ${socket.id} (online=${onlineCount.value})`)
+    console.log(`[mtd-feed] disconnect ${socket.id} (online=${onlineCount.value})`)
   })
 
-  socket.on('error', (err) => console.error(`[deal-feed] socket error ${socket.id}:`, err))
+  socket.on('error', (err) => console.error(`[mtd-feed] socket error ${socket.id}:`, err))
 })
 
 const PORT = 3003
 httpServer.listen(PORT, () => {
-  console.log(`[deal-feed] WebSocket server running on port ${PORT}`)
+  console.log(`[mtd-feed] WebSocket server running on port ${PORT}`)
 })
 
 process.on('SIGTERM', () => httpServer.close(() => process.exit(0)))

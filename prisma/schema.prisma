@@ -10,75 +10,74 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Business acquisition categories on makethisdeal.biz
 model Category {
   id        String   @id @default(cuid())
   name      String   @unique
   slug      String   @unique
-  icon      String   // emoji or lucide icon name
-  color     String   // tailwind color token, e.g. "amber"
+  icon      String   // emoji
+  color     String   // accent token name
+  blurb     String   @default("") // short category description
   createdAt DateTime @default(now())
-  deals     Deal[]
+  listings  Listing[]
 }
 
-model Deal {
+// A business/project listed for sale or investment on the marketplace.
+model Listing {
   id            String   @id @default(cuid())
   title         String
+  tagline       String   @default("") // one-line pitch
   description   String
-  store         String
-  storeLogo     String?  // emoji or short text used as logo mark
-  imageUrl      String
-  originalPrice Float
-  dealPrice     Float
-  currency      String   @default("USD")
-  discountPct   Int      // computed % off, stored for sorting/filtering
-  url           String   // outbound deal link
   categorySlug  String
   category      Category @relation(fields: [categorySlug], references: [slug])
+  askingPrice   Float    // main asking price (USD)
+  valuation     Float    @default(0) // independent/AI valuation estimate
+  currency      String   @default("USD")
+  annualRevenue Float    @default(0)
+  annualProfit  Float    @default(0) // SDE / cash flow
+  revenueMultiple Float  @default(0) // asking / revenue (computed)
+  profitMultiple Float   @default(0) // asking / profit (computed)
+  stage         String   @default("Growth") // "Startup" | "Growth" | "Established"
+  location      String   @default("Remote / Global")
+  ageYears      Int      @default(0)
+  employees     Int      @default(0)
+  verified      Boolean  @default(true)
   featured      Boolean  @default(false)
   trending      Boolean  @default(false)
-  flashDeal     Boolean  @default(false) // shows a live countdown
-  expiresAt     DateTime
-  claimedCount  Int      @default(0)
+  imageUrl      String
+  metrics       String   @default("") // comma-separated headline metrics e.g. "1,200 customers, 4.8 NPS"
+  tags          String   @default("") // comma-separated
+  url           String   @default("") // outbound link / external
   viewCount     Int      @default(0)
-  rating        Float    @default(4.5)
-  tags          String   @default("") // comma separated
+  inquiryCount  Int      @default(0)
+  rating        Float    @default(4.7)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  savedBy       SavedDeal[]
-  claims        Claim[]
-  reviews       Review[]
+  savedBy       SavedListing[]
+  inquiries     Inquiry[]
 }
 
-model SavedDeal {
+model SavedListing {
   id        String   @id @default(cuid())
   sessionId String
-  dealId    String
-  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
-  @@unique([sessionId, dealId])
+  @@unique([sessionId, listingId])
   @@index([sessionId])
 }
 
-model Claim {
+model Inquiry {
   id        String   @id @default(cuid())
   sessionId String
-  dealId    String
-  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  message   String   @default("")
   createdAt DateTime @default(now())
 
-  @@unique([sessionId, dealId])
+  @@unique([sessionId, listingId])
   @@index([sessionId])
-}
-
-model Review {
-  id        String   @id @default(cuid())
-  dealId    String
-  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
-  sessionId String
-  rating    Int
-  comment   String   @default("")
-  createdAt DateTime @default(now())
 }
 
 model ChatMessage {

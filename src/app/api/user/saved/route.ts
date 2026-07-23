@@ -4,42 +4,42 @@ import { getSessionId } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/user/saved  — list this visitor's saved deals
+// GET /api/user/saved — list this visitor's saved listings
 export async function GET() {
   const sessionId = await getSessionId();
-  const saved = await db.savedDeal.findMany({
+  const saved = await db.savedListing.findMany({
     where: { sessionId },
     orderBy: { createdAt: "desc" },
-    include: { deal: { include: { category: true } } },
+    include: { listing: { include: { category: true } } },
   });
-  return NextResponse.json({ saved: saved.map((s) => s.deal) });
+  return NextResponse.json({ saved: saved.map((s) => s.listing) });
 }
 
-// POST /api/user/saved  { dealId }  — save a deal
+// POST /api/user/saved { listingId }
 export async function POST(req: NextRequest) {
   const sessionId = await getSessionId();
-  const { dealId } = await req.json();
-  if (!dealId) return NextResponse.json({ error: "dealId required" }, { status: 400 });
+  const { listingId } = await req.json();
+  if (!listingId) return NextResponse.json({ error: "listingId required" }, { status: 400 });
 
   try {
-    await db.savedDeal.upsert({
-      where: { sessionId_dealId: { sessionId, dealId } },
+    await db.savedListing.upsert({
+      where: { sessionId_listingId: { sessionId, listingId } },
       update: {},
-      create: { sessionId, dealId },
+      create: { sessionId, listingId },
     });
   } catch {
-    return NextResponse.json({ error: "Could not save deal" }, { status: 400 });
+    return NextResponse.json({ error: "Could not save listing" }, { status: 400 });
   }
   return NextResponse.json({ ok: true });
 }
 
-// DELETE /api/user/saved?dealId=xxx  — unsave a deal
+// DELETE /api/user/saved?listingId=xxx
 export async function DELETE(req: NextRequest) {
   const sessionId = await getSessionId();
   const { searchParams } = new URL(req.url);
-  const dealId = searchParams.get("dealId");
-  if (!dealId) return NextResponse.json({ error: "dealId required" }, { status: 400 });
+  const listingId = searchParams.get("listingId");
+  if (!listingId) return NextResponse.json({ error: "listingId required" }, { status: 400 });
 
-  await db.savedDeal.deleteMany({ where: { sessionId, dealId } });
+  await db.savedListing.deleteMany({ where: { sessionId, listingId } });
   return NextResponse.json({ ok: true });
 }

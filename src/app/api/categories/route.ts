@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const categories = await db.category.findMany({
     orderBy: { name: "asc" },
-    include: { _count: { select: { deals: true } } },
+    include: { _count: { select: { listings: true } } },
   });
   return NextResponse.json({ categories });
 }
