@@ -81,7 +81,7 @@ export function Footer() {
                 <BadgePercent className="size-5" strokeWidth={2.5} />
               </span>
               <span className="text-lg font-bold tracking-tight">
-                akethisdeal
+                makethisdeal
                 <span className="text-muted-foreground/70">.biz</span>
               </span>
             </div>
@@ -159,7 +159,7 @@ export function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col items-start justify-between gap-2 border-t border-border/40 pt-6 text-xs text-muted-foreground/70 sm:flex-row sm:items-center">
-          <p>© 2026 akethisdeal.biz · Made for deal hunters.</p>
+          <p>© 2026 makethisdeal.biz · Made for deal hunters.</p>
           <p className="text-muted-foreground/60">Powered by Z.ai</p>
         </div>
       </div>

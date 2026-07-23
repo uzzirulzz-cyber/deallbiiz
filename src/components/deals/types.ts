@@ -1,4 +1,4 @@
-// Shared types for the Take This Deal frontend — matches the backend API contract.
+// Shared types for the Make This Deal frontend — matches the backend API contract.
 
 export interface Category {
   id: string;

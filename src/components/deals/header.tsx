@@ -31,13 +31,13 @@ function Logo() {
     <a
       href="/"
       className="group flex items-center gap-2.5"
-      aria-label="akethisdeal.biz home"
+      aria-label="makethisdeal.biz home"
     >
       <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-amber-950 shadow-lg shadow-amber-500/20 transition-transform group-hover:scale-105">
         <BadgePercent className="size-5" strokeWidth={2.5} />
       </span>
       <span className="text-base font-bold tracking-tight sm:text-lg">
-        akethisdeal
+        makethisdeal
         <span className="text-muted-foreground/70">.biz</span>
       </span>
     </a>

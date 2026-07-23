@@ -6,7 +6,7 @@ import ZAI from "z-ai-web-dev-sdk";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const SYSTEM_PROMPT = `You are "Dealio", the witty, concise AI deal-hunting assistant for Take This Deal (akethisdeal.biz).
+const SYSTEM_PROMPT = `You are "Dealio", the witty, concise AI deal-hunting assistant for Make This Deal (makethisdeal.biz).
 Your job: help the visitor find the best deal for their need, or decide whether a deal is worth it.
 
 Rules:

@@ -14,34 +14,34 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "akethisdeal.biz — Premium Deals, Hand-Picked Daily",
+  title: "makethisdeal.biz — Premium Deals, Hand-Picked Daily",
   description:
-    "Take This Deal — hand-picked premium daily & flash deals. Live countdowns, AI deal finder, snap-a-deal AI, and real-time web deal search.",
+    "Make This Deal — hand-picked premium daily & flash deals. Live countdowns, AI deal finder, snap-a-deal AI, and real-time web deal search.",
   keywords: [
     "deals",
     "flash deals",
     "daily deals",
     "discounts",
     "AI deal finder",
-    "akethisdeal",
+    "makethisdeal",
     "coupons",
     "sale",
   ],
-  authors: [{ name: "akethisdeal.biz" }],
+  authors: [{ name: "makethisdeal.biz" }],
   icons: {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },
   openGraph: {
-    title: "akethisdeal.biz — Premium Deals, Hand-Picked Daily",
+    title: "makethisdeal.biz — Premium Deals, Hand-Picked Daily",
     description:
       "Live countdowns, AI deal finder, snap-a-deal AI, and real-time web deal search.",
-    url: "https://akethisdeal.biz",
-    siteName: "akethisdeal.biz",
+    url: "https://makethisdeal.biz",
+    siteName: "makethisdeal.biz",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "akethisdeal.biz — Premium Deals, Hand-Picked Daily",
+    title: "makethisdeal.biz — Premium Deals, Hand-Picked Daily",
     description:
       "Live countdowns, AI deal finder, snap-a-deal AI, and real-time web deal search.",
   },
