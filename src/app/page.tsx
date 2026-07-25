@@ -27,6 +27,9 @@ import { ListingsGrid } from "@/components/marketplace/listings-grid";
 import { HowItWorks } from "@/components/marketplace/how-it-works";
 import { CtaBand } from "@/components/marketplace/cta-band";
 import { Footer } from "@/components/marketplace/footer";
+import { PremiumSection } from "@/components/marketplace/premium-section";
+import { EnterpriseFeatures } from "@/components/marketplace/enterprise-features";
+import { GlobalTrust } from "@/components/marketplace/global-trust";
 import { AiValuation } from "@/components/marketplace/ai-valuation";
 import { SnapAListing } from "@/components/marketplace/snap-a-listing";
 import { WebSearch } from "@/components/marketplace/web-search";
@@ -208,6 +211,15 @@ function PageContent() {
 
         {/* Mid-page CTA band */}
         <CtaBand />
+
+        {/* Enterprise features */}
+        <EnterpriseFeatures />
+
+        {/* Premium pricing */}
+        <PremiumSection />
+
+        {/* Global trust + testimonials */}
+        <GlobalTrust />
       </main>
 
       <Footer />
