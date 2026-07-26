@@ -2,42 +2,41 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 // Business acquisition categories on makethisdeal.biz
 model Category {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   name      String   @unique
   slug      String   @unique
-  icon      String   // emoji
-  color     String   // accent token name
-  blurb     String   @default("") // short category description
+  icon      String
+  color     String
+  blurb     String   @default("")
   createdAt DateTime @default(now())
-  listings  Listing[]
 }
 
 // A business/project listed for sale or investment on the marketplace.
 model Listing {
-  id            String   @id @default(cuid())
+  id            String   @id @default(cuid()) @map("_id")
   title         String
-  tagline       String   @default("") // one-line pitch
+  tagline       String   @default("")
   description   String
   categorySlug  String
-  category      Category @relation(fields: [categorySlug], references: [slug])
-  askingPrice   Float    // main asking price (USD)
-  valuation     Float    @default(0) // independent/AI valuation estimate
+  askingPrice   Float
+  valuation     Float    @default(0)
   currency      String   @default("USD")
   annualRevenue Float    @default(0)
-  annualProfit  Float    @default(0) // SDE / cash flow
-  revenueMultiple Float  @default(0) // asking / revenue (computed)
-  profitMultiple Float   @default(0) // asking / profit (computed)
-  stage         String   @default("Growth") // "Startup" | "Growth" | "Established"
+  annualProfit  Float    @default(0)
+  revenueMultiple Float  @default(0)
+  profitMultiple Float   @default(0)
+  stage         String   @default("Growth")
   location      String   @default("Remote / Global")
   ageYears      Int      @default(0)
   employees     Int      @default(0)
@@ -45,9 +44,9 @@ model Listing {
   featured      Boolean  @default(false)
   trending      Boolean  @default(false)
   imageUrl      String
-  metrics       String   @default("") // comma-separated headline metrics e.g. "1,200 customers, 4.8 NPS"
-  tags          String   @default("") // comma-separated
-  url           String   @default("") // outbound link / external
+  metrics       String   @default("")
+  tags          String   @default("")
+  url           String   @default("")
   viewCount     Int      @default(0)
   inquiryCount  Int      @default(0)
   rating        Float    @default(4.7)
@@ -55,13 +54,19 @@ model Listing {
   updatedAt     DateTime @updatedAt
   savedBy       SavedListing[]
   inquiries     Inquiry[]
+  orders        Order[]
+
+  @@index([categorySlug])
+  @@index([featured])
+  @@index([trending])
+  @@index([stage])
 }
 
 model SavedListing {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   sessionId String
   listingId String
-  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id])
   createdAt DateTime @default(now())
 
   @@unique([sessionId, listingId])
@@ -69,10 +74,10 @@ model SavedListing {
 }
 
 model Inquiry {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   sessionId String
   listingId String
-  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id])
   message   String   @default("")
   createdAt DateTime @default(now())
 
@@ -81,11 +86,84 @@ model Inquiry {
 }
 
 model ChatMessage {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   sessionId String
-  role      String   // "user" | "assistant"
+  role      String
   content   String
   createdAt DateTime @default(now())
 
   @@index([sessionId])
+}
+
+model SiteContent {
+  id          String   @id @default("singleton") @map("_id")
+  hero        String   @default("")
+  stats       String   @default("")
+  howItWorks  String   @default("")
+  sections    String   @default("")
+  themeColor  String   @default("#3B82F6")
+  accentColor String   @default("#8B5CF6")
+  brandName   String   @default("Make This Deal")
+  tagline     String   @default("Together We Grow Strong")
+  footerNote  String   @default("Global Enterprise Marketplace")
+  updatedAt   DateTime @updatedAt
+}
+
+model Member {
+  id            String   @id @default(cuid()) @map("_id")
+  name          String
+  email         String   @unique
+  passwordHash  String
+  phone         String   @default("")
+  company       String   @default("")
+  role          String   @default("member")
+  status        String   @default("active")
+  avatarUrl     String   @default("")
+  orders        Order[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+}
+
+model Order {
+  id            String   @id @default(cuid()) @map("_id")
+  memberId      String
+  member        Member   @relation(fields: [memberId], references: [id])
+  listingId     String
+  listing       Listing  @relation(fields: [listingId], references: [id])
+  status        String   @default("pending")
+  offerPrice    Float    @default(0)
+  message       String   @default("")
+  financingType String   @default("cash")
+  timeline      String   @default("")
+  adminNotes    String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([memberId])
+  @@index([listingId])
+  @@index([status])
+}
+
+model PaymentSubmission {
+  id             String   @id @default(cuid()) @map("_id")
+  email          String
+  name           String?  @default("")
+  method         String
+  amountPkr      Int      @default(0)
+  amountUsd      Float    @default(0)
+  description    String   @default("")
+  transactionRef String?  @default("")
+  note           String?  @default("")
+  status         String   @default("pending")
+  reviewedAt     DateTime?
+  adminNote      String?  @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+  @@index([method])
+  @@index([createdAt])
 }
